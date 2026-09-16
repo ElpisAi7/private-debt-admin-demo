@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Private Debt admin</title>
+    <style>
+      :root {
+        --bg: #0f141c;
+        --panel: #1a2130;
+        --ink: #e8edf7;
+        --muted: #9aa7bd;
+        --line: #2a3548;
+        --accent: #e2b15a;
+        --ok: #6fbf8b;
+        --warn: #e2b15a;
+        --bad: #e07a7a;
+        --btn: #2d3a52;
+        --soft: #151c28;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font: 14px/1.45 ui-sans-serif, system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+      }
+      header {
+        padding: 20px 24px 12px;
+        border-bottom: 1px solid var(--line);
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0 0 6px;
+      }
+      .sub {
+        color: var(--muted);
+        max-width: 72rem;
+      }
+      main {
+        padding: 16px 24px 40px;
+        display: grid;
+        gap: 16px;
+      }
+      section {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 16px;
+      }
+      h2 {
+        margin: 0 0 12px;
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .switcher {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .note-btn {
+        min-width: 12rem;
+        text-align: left;
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: var(--soft);
+        color: var(--ink);
+        cursor: pointer;
+      }
+      .note-btn strong {
+        display: block;
+        font-size: 15px;
+      }
+      .note-btn span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 2px;
+      }
+      .note-btn.active {
+        border-color: var(--accent);
+        box-shadow: inset 0 0 0 1px var(--accent);
+      }
+      .note-btn.ghost {
+        opacity: 0.85;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 10px 20px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 9.5rem minmax(0, 1fr);
+        gap: 10px;
+        align-items: start;
+      }
+      .k {
+        color: var(--muted);
+      }
+      .v {
+        overflow-wrap: anywhere;
+      }
+      .money {
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+        font-size: 16px;
+      }
+      .wei {
+        display: block;
+        color: var(--muted);
+        font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+        margin-top: 2px;
+      }
+      a {
+        color: var(--accent);
+      }
+      .next {
+        border-color: var(--accent);
+        background: #2a2418;
+      }
+      .next .id {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--accent);
+      }
+      .banner {
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: #2a2418;
+        color: var(--warn);
+        margin-bottom: 12px;
+      }
+      .banner.readonly {
+        background: #1d2a22;
+        color: var(--ok);
+        border: 1px solid #355844;
+        margin: 12px 24px 0;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      button {
+        appearance: none;
+        border: 1px solid var(--line);
+        background: var(--btn);
+        color: var(--ink);
+        padding: 8px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      button.primary {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      button.quiet {
+        font-weight: 500;
+        color: var(--muted);
+      }
+      button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      button.busy {
+        opacity: 0.7;
+      }
+      label {
+        display: block;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      input {
+        width: min(42rem, 100%);
+        background: #10141c;
+        color: var(--ink);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px 10px;
+        font: inherit;
+      }
+      .form-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        margin-top: 8px;
+      }
+      #log {
+        white-space: pre-wrap;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+        color: var(--muted);
+        min-height: 3em;
+      }
+      .ok {
+        color: var(--ok);
+      }
+      .bad {
+        color: var(--bad);
+      }
+      .pill {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        font-size: 12px;
+      }
+      .pill.on {
+        border-color: var(--ok);
+        color: var(--ok);
+      }
+      .pill.off {
+        border-color: var(--warn);
+        color: var(--warn);
+      }
+      .pill.bad {
+        border-color: var(--bad);
+        color: var(--bad);
+      }
+      .table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 28rem;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 10px 8px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      th {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      tr.selected {
+        background: #242014;
+      }
+      tr.pick {
+        cursor: pointer;
+      }
+      tr.pick:hover {
+        background: #212838;
+      }
+      .addr {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+      }
+      .loan-hero {
+        margin-bottom: 12px;
+      }
+      .loan-hero .loan-title {
+        font-size: 22px;
+        font-weight: 700;
+      }
+      .loan-hero .money {
+        font-size: 28px;
+        display: block;
+        margin-top: 4px;
+      }
+      details.onchain {
+        margin-top: 14px;
+        border-top: 1px solid var(--line);
+        padding-top: 10px;
+      }
+      details.onchain > summary {
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        list-style: none;
+      }
+      details.onchain > summary::-webkit-details-marker {
+        display: none;
+      }
+      details.chain-id-details {
+        margin-top: 2px;
+      }
+      details.chain-id-details > summary {
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 11px;
+        list-style: none;
+      }
+      details.chain-id-details > summary::-webkit-details-marker {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Private Debt admin</h1>
+      <p class="sub" id="pageSub">
+        Partner demo — two loans, three investors. Ops signs every step (custody model A). Investors do not connect a wallet. Amounts are dollars (1
+        token = $1). Raw chain units stay in the tooltip.
+      </p>
+    </header>
+    <div id="readOnlyBanner" class="banner readonly" hidden>
+      Read-only live view on Redbelly testnet (chain 153). Open in Safari or Chrome — not MetaMask’s in-app browser. Writes are disabled on this host.
+      No wallet connect and no ops key.
+    </div>
+    <main>
+      <section>
+        <h2>Loan</h2>
+        <div class="switcher" id="noteSwitcher"></div>
+      </section>
+
+      <section class="next">
+        <h2>Next action</h2>
+        <div id="idleBanner" class="banner" hidden></div>
+        <div class="id" id="nextId">loading…</div>
+        <p id="nextSummary"></p>
+        <p class="sub" id="nextHint"></p>
+      </section>
+
+      <section>
+        <h2>Investors</h2>
+        <p class="sub" id="investorHint">Select a row, then Issue / Accrue / Coupon / Redeem for that investor.</p>
+        <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Investor</th>
+              <th>Eligibility</th>
+              <th>Position</th>
+              <th>Target</th>
+            </tr>
+          </thead>
+          <tbody id="investorBody">
+            <tr>
+              <td colspan="4">Loading…</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+      </section>
+
+      <section>
+        <h2>Register</h2>
+        <div class="grid">
+          <div class="row"><span class="k">On registry</span><span class="v" id="regContained">—</span></div>
+          <div class="row"><span class="k">Eligible</span><span class="v" id="regVerified">—</span></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Instrument</h2>
+        <div class="loan-hero">
+          <div class="loan-title" id="loanTitle">loading…</div>
+          <div id="faceValue">—</div>
+        </div>
+        <div class="grid">
+          <div class="row"><span class="k">Coupon</span><span class="v" id="couponRate">—</span></div>
+          <div class="row"><span class="k">Matures</span><span class="v" id="maturity">—</span></div>
+          <div class="row"><span class="k">Matured</span><span class="v" id="matured">—</span></div>
+          <div class="row"><span class="k">Defaulted</span><span class="v" id="defaulted">—</span></div>
+          <div class="row"><span class="k">Holder</span><span class="v" id="holderName">—</span></div>
+        </div>
+        <details class="onchain">
+          <summary>On-chain ids</summary>
+          <div class="grid" style="margin-top: 10px">
+            <div class="row"><span class="k">Loan contract</span><span class="v" id="debtLink">—</span></div>
+            <div class="row"><span class="k">Selected wallet</span><span class="v" id="invLink">—</span></div>
+            <div class="row"><span class="k">Ops signer</span><span class="v" id="opsLink">—</span></div>
+            <div class="row"><span class="k">Security token</span><span class="v" id="tokLink">—</span></div>
+            <div class="row"><span class="k">Cash token</span><span class="v" id="cashLink">—</span></div>
+            <div class="row"><span class="k">Identity registry</span><span class="v" id="irLink">—</span></div>
+            <div class="row"><span class="k">ONCHAINID</span><span class="v" id="regIdentity">—</span></div>
+            <div class="row"><span class="k">Chain time</span><span class="v" id="chainTime">—</span></div>
+          </div>
+          <div style="margin-top: 12px">
+            <p class="sub">
+              Paste a PrivateDebt address only if you need to point this loan at a different live instrument. Empty + Apply restores the config
+              value.
+            </p>
+            <label for="debtInput">PrivateDebt address</label>
+            <div class="form-row">
+              <input id="debtInput" spellcheck="false" placeholder="0x…" />
+              <button id="btnApplyDebt" type="button">Apply</button>
+              <button id="btnClearDebt" type="button">Use config</button>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <section>
+        <h2>Position</h2>
+        <div class="grid">
+          <div class="row"><span class="k">Principal</span><span class="v" id="principal">—</span></div>
+          <div class="row"><span class="k">Accrued</span><span class="v" id="accrued">—</span></div>
+          <div class="row"><span class="k">Last accrual</span><span class="v" id="lastAccrual">—</span></div>
+          <div class="row"><span class="k">Redeemed</span><span class="v" id="redeemed">—</span></div>
+          <div class="row"><span class="k">Coupon preview</span><span class="v" id="preview">—</span></div>
+          <div class="row"><span class="k">Token held</span><span class="v" id="tokenBal">—</span></div>
+          <div class="row"><span class="k">Investor cash</span><span class="v" id="cashBal">—</span></div>
+          <div class="row"><span class="k">Ops cash</span><span class="v" id="opsCash">—</span></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Lifecycle</h2>
+        <div class="actions">
+          <button id="btnIssue" class="primary" disabled data-action="issue">Issue</button>
+          <button id="btnAccrue" disabled data-action="accrue">Accrue</button>
+          <button id="btnCoupon" disabled data-action="coupon">Coupon</button>
+          <button id="btnRedeem" disabled data-action="redeem">Redeem</button>
+          <button id="btnDefault" class="quiet" disabled data-action="default">Default</button>
+          <button id="btnRefresh" type="button">Refresh</button>
+        </div>
+        <p class="sub" id="issueHint"></p>
+      </section>
+
+      <section>
+        <h2>Last result</h2>
+        <div id="log">No action yet.</div>
+      </section>
+    </main>
+    <script src="readonly-client.js"></script>
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const buttons = ['issue', 'accrue', 'coupon', 'redeem', 'default'];
+      let busy = false;
+      let selectedNoteId = 'loan-a';
+      let selectedInvestorId = 'pilot';
+      let lastStatus = null;
+      let uiMode = 'ops-api';
+      let demoConfig = null;
+      const noteOverrides = {};
+
+      function isReadOnly() {
+        return uiMode !== 'ops-api';
+      }
+
+      function pill(el, on, labelOn, labelOff, warnOff) {
+        el.className = 'pill ' + (on ? 'on' : warnOff ? 'off' : 'bad');
+        el.textContent = on ? labelOn : labelOff;
+      }
+
+      function moneyHtml(money) {
+        if (!money) return '—';
+        return '<span class="money" title="' + money.wei + '">' + money.display + '</span>';
+      }
+
+      function humanDate(iso) {
+        if (!iso) return '—';
+        const date = new Date(iso);
+        if (Number.isNaN(date.getTime())) return iso;
+        return date.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+      }
+
+      function addr(link, short) {
+        if (!link) return '—';
+        const label = short || link.address;
+        return '<a class="addr" href="' + link.explorer + '" target="_blank" rel="noopener" title="' + link.address + '">' + label + '</a>';
+      }
+
+      function renderSwitcher(status) {
+        const host = $('noteSwitcher');
+        host.innerHTML = '';
+        status.notes.forEach((note) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'note-btn' + (note.id === status.selectedNoteId ? ' active' : '') + (note.deployed ? '' : ' ghost');
+          const face = note.faceValue ? note.faceValue.display : '';
+          const state = note.deployed ? face : 'not deployed yet';
+          btn.innerHTML = '<strong>' + note.label + '</strong><span>' + state + '</span>';
+          btn.addEventListener('click', () => {
+            selectedNoteId = note.id;
+            refresh().catch((err) => log(false, err.message || String(err)));
+          });
+          host.appendChild(btn);
+        });
+      }
+
+      function renderInvestors(status) {
+        const body = $('investorBody');
+        body.innerHTML = '';
+        status.investors.forEach((row) => {
+          const tr = document.createElement('tr');
+          tr.className = 'pick' + (row.selected ? ' selected' : '');
+          const elig = row.eligibility === 'verified' ? '<span class="pill on">Verified</span>' : '<span class="pill off">Pending</span>';
+          tr.innerHTML =
+            '<td><strong>' +
+            row.label +
+            '</strong><details class="chain-id-details"><summary>On-chain id</summary><a class="addr" href="' +
+            row.explorer +
+            '" target="_blank" rel="noopener" title="' +
+            row.address +
+            '">' +
+            row.addressShort +
+            '</a></details></td>' +
+            '<td>' +
+            elig +
+            '</td>' +
+            '<td title="' +
+            row.position.wei +
+            '"><span class="money">' +
+            row.position.display +
+            '</span> <span class="sub">' +
+            row.positionShare +
+            '</span></td>' +
+            '<td title="' +
+            row.target.wei +
+            '">' +
+            row.target.display +
+            ' <span class="sub">(' +
+            row.targetShare +
+            ')</span></td>';
+          tr.addEventListener('click', (ev) => {
+            if (ev.target.closest('a') || ev.target.closest('details')) return;
+            selectedInvestorId = row.id;
+            refresh().catch((err) => log(false, err.message || String(err)));
+          });
+          body.appendChild(tr);
+        });
+        $('investorHint').textContent = isReadOnly()
+          ? status.verifiedCount + ' of ' + status.investors.length + ' investors verified. Select a row to inspect holdings (writes disabled).'
+          : status.verifiedCount +
+            ' of ' +
+            status.investors.length +
+            ' investors verified. Select a row, then use Issue / Accrue / Coupon / Redeem.';
+      }
+
+      function render(status) {
+        lastStatus = status;
+        selectedNoteId = status.selectedNoteId;
+        selectedInvestorId = status.selectedInvestorId;
+        renderSwitcher(status);
+        renderInvestors(status);
+
+        $('nextId').textContent = status.next.title || status.next.id;
+        $('nextSummary').textContent = status.next.summary;
+        $('nextHint').textContent = !isReadOnly() && status.next.command ? 'CLI equivalent: ' + status.next.command : '';
+        const banner = $('idleBanner');
+        if (!status.deployed) {
+          banner.hidden = false;
+          banner.textContent = status.undeployedReason || 'This loan is not deployed yet.';
+        } else if (status.next.id === 'idle-redeemed' || (status.position && status.position.redeemed)) {
+          banner.hidden = false;
+          banner.textContent = 'This position is redeemed. Point at a new unmatured loan to continue.';
+        } else if (status.next.id === 'redeploy-matured') {
+          banner.hidden = false;
+          banner.textContent = 'This loan is past maturity with no position. Deploy a new instrument.';
+        } else {
+          banner.hidden = true;
+        }
+
+        pill($('regContained'), status.register.contained, 'Yes', 'No', true);
+        pill($('regVerified'), status.register.verified, 'Verified', 'Pending', true);
+        if (status.register.identityExplorer) {
+          $('regIdentity').innerHTML =
+            '<a href="' + status.register.identityExplorer + '" target="_blank" rel="noopener">' + status.register.identity + '</a>';
+        } else {
+          $('regIdentity').textContent = '—';
+        }
+
+        const inst = status.instrument;
+        const current = status.notes.find((note) => note.id === status.selectedNoteId);
+        const selected = status.investors.find((row) => row.selected);
+        $('loanTitle').textContent = current ? current.label : '—';
+        $('faceValue').innerHTML = inst ? moneyHtml(inst.faceValue) : '—';
+        $('holderName').textContent = selected ? selected.label : '—';
+        $('debtLink').innerHTML = addr(status.links.privateDebt, current && current.addressShort);
+        $('opsLink').innerHTML = addr(status.links.opsSigner);
+        $('invLink').innerHTML = addr(status.links.investor, selected && selected.addressShort);
+        $('tokLink').innerHTML = addr(status.links.token);
+        $('cashLink').innerHTML = addr(status.links.cash);
+        $('irLink').innerHTML = addr(status.links.ir);
+        $('couponRate').textContent = inst && inst.couponRate && inst.couponRate !== '—' ? inst.couponRate : '—';
+        if (inst && inst.maturityIso) {
+          $('maturity').textContent = humanDate(inst.maturityIso);
+          $('maturity').title = inst.maturityIso;
+        } else {
+          $('maturity').textContent = '—';
+          $('maturity').title = '';
+        }
+        $('chainTime').textContent = inst && inst.chainTimeIso ? inst.chainTimeIso : '—';
+        if (inst && status.deployed) {
+          pill($('matured'), inst.matured, 'Yes', 'No', true);
+          const defLabel = inst.defaultReasonDecoded || inst.defaultReason;
+          pill($('defaulted'), inst.defaulted, defLabel || 'Yes', 'No', true);
+        } else {
+          $('matured').textContent = '—';
+          $('matured').className = 'v';
+          $('defaulted').textContent = '—';
+          $('defaulted').className = 'v';
+        }
+
+        const pos = status.position;
+        if (pos) {
+          $('principal').innerHTML = moneyHtml(pos.principal);
+          $('accrued').innerHTML = moneyHtml(pos.accrued);
+          $('lastAccrual').textContent = pos.lastAccrualIso || '—';
+          pill($('redeemed'), pos.redeemed, 'Yes', 'No', true);
+          $('preview').innerHTML = moneyHtml(pos.previewTotal);
+          $('tokenBal').innerHTML = moneyHtml(pos.tokenBalance);
+          $('cashBal').innerHTML = moneyHtml(pos.cashBalance);
+          $('opsCash').innerHTML = moneyHtml(pos.opsCash);
+        } else {
+          ['principal', 'accrued', 'lastAccrual', 'preview', 'tokenBal', 'cashBal', 'opsCash'].forEach((id) => {
+            $(id).textContent = '—';
+          });
+          $('redeemed').textContent = '—';
+          $('redeemed').className = 'v';
+        }
+
+        if (isReadOnly()) {
+          $('issueHint').textContent = selected
+            ? 'Read-only host: Issue / Accrue / Coupon / Redeem / Default are disabled. Showing ' +
+              selected.label +
+              ' target ' +
+              status.principalToIssue.display +
+              '.'
+            : 'Read-only host: writes are disabled.';
+        } else {
+          $('issueHint').textContent = selected
+            ? 'Issue amount for ' + selected.label + ': ' + status.principalToIssue.display + ' (from config share of this loan).'
+            : '';
+        }
+        if (current && current.privateDebt && !$('debtInput').value) {
+          $('debtInput').placeholder = current.privateDebt;
+        } else if (current && !current.privateDebt) {
+          $('debtInput').placeholder = 'Not deployed yet — paste a PrivateDebt address';
+        }
+
+        buttons.forEach((name) => {
+          const el = document.querySelector('[data-action="' + name + '"]');
+          const enabled = !isReadOnly() && Boolean(status.buttons && status.buttons[name]);
+          el.disabled = busy || !enabled;
+          el.classList.toggle('primary', !isReadOnly() && (status.next.id === name || (name === 'coupon' && status.next.id === 'pay-coupon')));
+        });
+      }
+
+      function log(ok, text) {
+        $('log').className = ok ? 'ok' : 'bad';
+        $('log').textContent = text;
+      }
+
+      async function api(path, options) {
+        const res = await fetch(path, options);
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || res.statusText);
+        }
+        return data;
+      }
+
+      function statusPath() {
+        return '/api/status?note=' + encodeURIComponent(selectedNoteId) + '&investor=' + encodeURIComponent(selectedInvestorId);
+      }
+
+      async function refresh() {
+        let status;
+        if (uiMode === 'readonly-client') {
+          status = await window.OpsReadonly.collectOpsStatus(demoConfig, {
+            noteId: selectedNoteId,
+            investorId: selectedInvestorId,
+            noteOverrides,
+          });
+        } else {
+          const data = await api(statusPath());
+          status = data.status;
+        }
+        status.readOnly = isReadOnly();
+        render(status);
+        return status;
+      }
+
+      async function runAction(name) {
+        if (busy) return;
+        if (isReadOnly()) {
+          log(false, 'Writes are disabled on this read-only host. Viewing Loan A/B holdings only.');
+          return;
+        }
+        if (name === 'default' && !window.confirm('Flag this loan as defaulted? This blocks further coupon and redeem.')) {
+          return;
+        }
+        busy = true;
+        document.querySelectorAll('button').forEach((b) => b.classList.add('busy'));
+        try {
+          const data = await api('/api/' + name, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ noteId: selectedNoteId, investorId: selectedInvestorId }),
+          });
+          render(data.status);
+          const r = data.result;
+          const lines = [r.action + (r.skipped ? ' (skipped)' : ''), r.message];
+          if (r.txHash) lines.push('tx: ' + r.txHash);
+          if (r.explorer) lines.push(r.explorer);
+          log(true, lines.join('\n'));
+        } catch (err) {
+          log(false, err.message || String(err));
+        } finally {
+          busy = false;
+          document.querySelectorAll('button').forEach((b) => b.classList.remove('busy'));
+          try {
+            await refresh();
+          } catch (_) {
+            /* keep last render */
+          }
+        }
+      }
+
+      $('btnRefresh').addEventListener('click', async () => {
+        try {
+          await refresh();
+          log(true, 'Status refreshed.');
+        } catch (err) {
+          log(false, err.message || String(err));
+        }
+      });
+
+      buttons.forEach((name) => {
+        document.querySelector('[data-action="' + name + '"]').addEventListener('click', () => runAction(name));
+      });
+
+      $('btnApplyDebt').addEventListener('click', async () => {
+        try {
+          const raw = $('debtInput').value.trim();
+          if (uiMode === 'readonly-client') {
+            if (raw) {
+              noteOverrides[selectedNoteId] = window.OpsReadonly.checksum(raw);
+            } else {
+              delete noteOverrides[selectedNoteId];
+            }
+            const status = await refresh();
+            const current = status.notes.find((note) => note.id === selectedNoteId);
+            log(true, (current.label || 'Loan') + ' now ' + (current.privateDebt || 'unset') + (current.deployed === false ? ' (not deployed)' : '') + '.');
+            return;
+          }
+          const data = await api('/api/instrument', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              noteId: selectedNoteId,
+              investorId: selectedInvestorId,
+              address: raw,
+            }),
+          });
+          render(data.status);
+          const resolved = data.resolved;
+          log(true, (resolved.id || 'Loan') + ' now ' + (resolved.address || 'unset') + (resolved.deployed === false ? ' (not deployed)' : '') + '.');
+        } catch (err) {
+          log(false, err.message || String(err));
+        }
+      });
+
+      $('btnClearDebt').addEventListener('click', async () => {
+        $('debtInput').value = '';
+        try {
+          if (uiMode === 'readonly-client') {
+            delete noteOverrides[selectedNoteId];
+            await refresh();
+            log(true, 'Restored config address for this loan.');
+            return;
+          }
+          const data = await api('/api/instrument', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ noteId: selectedNoteId, investorId: selectedInvestorId, address: '' }),
+          });
+          render(data.status);
+          log(true, 'Restored config address for this loan.');
+        } catch (err) {
+          log(false, err.message || String(err));
+        }
+      });
+
+      async function detectMode() {
+        try {
+          const res = await fetch('/health', { cache: 'no-store' });
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.ok && data.service === 'ops-ui') {
+              return data.readOnly ? 'readonly-api' : 'ops-api';
+            }
+          }
+        } catch (_) {
+          /* static host — no ops server */
+        }
+        return 'readonly-client';
+      }
+
+      function applyReadOnlyChrome() {
+        if (!isReadOnly()) {
+          return;
+        }
+        $('readOnlyBanner').hidden = false;
+        $('pageSub').textContent =
+          'Read-only partner preview — two loans, three investors. Live holdings from Redbelly testnet. Custody model A (no LP wallet). Amounts are dollars (1 token = $1).';
+      }
+
+      detectMode()
+        .then(async (mode) => {
+          uiMode = mode;
+          applyReadOnlyChrome();
+          if (uiMode === 'readonly-client') {
+            await window.OpsReadonly.loadEthers();
+            demoConfig = await window.OpsReadonly.loadDemoConfig();
+          }
+          await refresh();
+        })
+        .catch((err) => log(false, err.message || String(err)));
+    </script>
+  </body>
+</html>

@@ -1,0 +1,50 @@
+{
+  "rpc": "https://governors.testnet.redbelly.network",
+  "chainId": 153,
+  "explorer": "https://redbelly.testnet.routescan.io",
+  "opsAddress": "0x077245Dcceb26E0ec63815a2cb9d4dcD8E91278c",
+  "version": 2,
+  "custodyModel": "A",
+  "dollarScale": {
+    "decimals": 18,
+    "tokenEqualsUsd": 1,
+    "note": "Demo scale: 18 decimals, 1 token = $1. Show dollars first; raw units only as secondary."
+  },
+  "notes": [
+    {
+      "id": "loan-a",
+      "label": "Loan A",
+      "faceValueUsd": "100000",
+      "privateDebt": "0xB9835303570734B96d767bBC87a7378354478f1F"
+    },
+    {
+      "id": "loan-b",
+      "label": "Loan B",
+      "faceValueUsd": "300000",
+      "privateDebt": "0xB238a5fc19c117951871381705491a5ADA804d20"
+    }
+  ],
+  "investors": [
+    {
+      "id": "pilot",
+      "label": "Daniel Chibwe (Pilot)",
+      "address": "0x077245Dcceb26E0ec63815a2cb9d4dcD8E91278c",
+      "identity": "0x0121d856E2075927281eD3dA8A69759aC9515c92",
+      "targetShareBps": 4000
+    },
+    {
+      "id": "lp-two",
+      "label": "Horizon Capital Pty Ltd",
+      "address": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      "identity": "0xbc3C602cF245213732Dc24dc9D230E7f21315Cb0",
+      "targetShareBps": 3500
+    },
+    {
+      "id": "lp-three",
+      "label": "Southern Super Nominees",
+      "address": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+      "identity": "0xBDd0Db483884e678A5997324a7E6B2DFF262d03E",
+      "targetShareBps": 2500
+    }
+  ]
+}
